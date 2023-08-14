@@ -15,6 +15,11 @@ create_course:
 	  -DCOURSE_PROXY_PORT=$(PROXY_PORT) \
 	  nginx.conf.m4 \
 	  > courses/$(NAME)/build/nginx.conf
+	m4 \
+	  -DCOURSE_NAME=$(NAME) \
+	  -DCOURSE_PROXY_PORT=$(PROXY_PORT) \
+	  testserver.service.m4 \
+	  > courses/$(NAME)/build/testserver.service
 	mkdir -p courses/$(NAME)/build/.ssh/
 	rm -f courses/$(NAME)/build/.ssh/authorized_keys
 	for user in $(GH_USERS); do \
@@ -22,8 +27,8 @@ create_course:
 	  >> courses/$(NAME)/build/.ssh/authorized_keys; \
 	done
 	ssh ubuntu@${HOST} 'sudo adduser --disabled-password --gecos GECOS --uid $(UID) $(NAME) && sudo usermod -aG docker $(NAME)'
-	scp -r courses/$(NAME)/build/.ssh courses/$(NAME)/build/nginx.conf ubuntu@${HOST}:$(NAME)
-	ssh ubuntu@${HOST} 'cd $(NAME) && sudo mv nginx.conf /etc/nginx/sites-available/$(NAME) && sudo ln -s /etc/nginx/sites-available/$(NAME) /etc/nginx/sites-enabled/$(NAME) && sudo mv .ssh /home/$(NAME)/'
+	scp -r courses/$(NAME)/build/.* courses/$(NAME)/build/* ubuntu@${HOST}:$(NAME)
+	ssh ubuntu@${HOST} 'cd $(NAME) && sudo mv nginx.conf /etc/nginx/sites-available/$(NAME) && sudo ln -s /etc/nginx/sites-available/$(NAME) /etc/nginx/sites-enabled/$(NAME) && sudo mv .ssh testserver.service /home/$(NAME)/'
 	ssh ubuntu@${HOST} 'sudo chown -R $(NAME):$(NAME) /home/$(NAME)/.ssh'
 	ssh ubuntu@${HOST} 'sudo -u $(NAME) /bin/bash -c "mkdir ~$(NAME)/uploads && chmod -R 700 ~$(NAME)/.ssh"'
 	ssh ubuntu@${HOST} 'sudo certbot --nginx --agree-tos --non-interactive -m oleks@oleks.info -d $(URL)'	
@@ -39,7 +44,7 @@ endif
 ifdef NAME
 ifdef URL
 del_course:
-	ssh ubuntu@${HOST} 'sudo rm -rf /etc/nginx/sites-enabled/$(NAME) /etc/nginx/sites-available/$(NAME) /etc/letsencrypt/live/$(URL)/ && sudo deluser --remove-home $(NAME)'
+	ssh ubuntu@${HOST} 'sudo rm -rf /etc/nginx/sites-enabled/$(NAME) /etc/nginx/sites-available/$(NAME) /etc/letsencrypt/live/$(URL)/ && sudo deluser --remove-home $(NAME) && sudo systemctl reload nginx'
 endif
 endif
 
