@@ -1,0 +1,14 @@
+:root {
+  --bs-body-bg: var(--bs-gray-100);
+}
+
+div.feedback-box {
+    display: none;
+}
+
+div.feedback {
+    font-family: var(--bs-font-monospace);
+    white-space: pre;
+    color: white;
+    background-color: black;
+}
