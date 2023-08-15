@@ -7,19 +7,7 @@ ifdef URL
 ifdef UID
 ifdef PROXY_PORT
 ifdef GH_USERS
-create_course:
-	mkdir -p courses/$(NAME)/build
-	m4 \
-	  -DCOURSE_NAME=$(NAME) \
-	  -DCOURSE_URL=$(URL) \
-	  -DCOURSE_PROXY_PORT=$(PROXY_PORT) \
-	  nginx.conf.m4 \
-	  > courses/$(NAME)/build/nginx.conf
-	m4 \
-	  -DCOURSE_NAME=$(NAME) \
-	  -DCOURSE_PROXY_PORT=$(PROXY_PORT) \
-	  testserver.service.m4 \
-	  > courses/$(NAME)/build/testserver.service
+create_course: course_config
 	mkdir -p courses/$(NAME)/build/.ssh/
 	rm -f courses/$(NAME)/build/.ssh/authorized_keys
 	for user in $(GH_USERS); do \
@@ -35,6 +23,21 @@ create_course:
 	rsync --chmod=Do+rx,Fo+r -ave 'ssh -A -J${JUMPHOST}' --exclude='*~' --exclude='__pycache__' static share ${NAME}@${HOST}:~${NAME}/
 	ssh ${NAME}@${HOST} share/build-index.sh
 	ssh ubuntu@${HOST} 'sudo chown $(NAME):www-data /home/$(NAME) && sudo chown -R $(NAME):www-data /home/$(NAME)/static && sudo chmod -R g+x /home/$(NAME)/static'
+
+.PHONY: course_config
+course_config:
+	mkdir -p courses/$(NAME)/build
+	m4 \
+	  -DCOURSE_NAME=$(NAME) \
+	  -DCOURSE_URL=$(URL) \
+	  -DCOURSE_PROXY_PORT=$(PROXY_PORT) \
+	  nginx.conf.m4 \
+	  > courses/$(NAME)/build/nginx.conf
+	m4 \
+	  -DCOURSE_NAME=$(NAME) \
+	  -DCOURSE_PROXY_PORT=$(PROXY_PORT) \
+	  testserver.service.m4 \
+	  > courses/$(NAME)/build/testserver.service
 endif
 endif
 endif
