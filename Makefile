@@ -1,19 +1,26 @@
 HOST=mist
 JUMPHOST=mist@os236.hpc.ku.dk
 
-.PHONY: create_coure
+.PHONY: show
+show:
+	@echo 'welp'
+
+.PHONY: phony
+
+.PHONY: create_course
+ifdef GH_USERS
+courses/%/build/.ssh/authorized_keys: phony
+	mkdir -p $(dir $@)
+	rm -f $@
+	for user in $(GH_USERS); do \
+	  curl -s https://github.com/$$user.keys \
+	  >> $@; \
+	done
 ifdef NAME
 ifdef URL
 ifdef UID
 ifdef PROXY_PORT
-ifdef GH_USERS
-create_course: course_config
-	mkdir -p courses/$(NAME)/build/.ssh/
-	rm -f courses/$(NAME)/build/.ssh/authorized_keys
-	for user in $(GH_USERS); do \
-	  curl -s https://github.com/$$user.keys \
-	  >> courses/$(NAME)/build/.ssh/authorized_keys; \
-	done
+create_course: course_config courses/$(NAME)/build/.ssh/authorized_keys
 	ssh ubuntu@${HOST} 'sudo adduser --disabled-password --gecos GECOS --uid $(UID) $(NAME) && sudo usermod -aG docker $(NAME)'
 	scp -r courses/$(NAME)/build/.* courses/$(NAME)/build/* ubuntu@${HOST}:$(NAME)
 	ssh ubuntu@${HOST} 'cd $(NAME) && sudo mv nginx.conf /etc/nginx/sites-available/$(NAME) && sudo ln -s /etc/nginx/sites-available/$(NAME) /etc/nginx/sites-enabled/$(NAME) && sudo mv .ssh testserver.service /home/$(NAME)/'
