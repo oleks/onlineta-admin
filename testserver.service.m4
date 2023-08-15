@@ -1,3 +1,6 @@
+dnl -*- mode: conf-unix -*-
+dnl vim: filetype=systemd
+
 [Unit]
 Description=OnlineTA Grading Server
 After=network.target

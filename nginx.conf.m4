@@ -1,3 +1,5 @@
+dnl -*- mode: nginx -*-
+dnl vim: filetype=nginx
 server {
   root /home/COURSE_NAME/static;
 
